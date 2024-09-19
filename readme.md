@@ -254,9 +254,7 @@ However, due to the maturity of SAML and better backward compatibility, it is hi
 The adoption of OIDC will involve updating and configuring client applications to use OIDC flows for authentication.
 Furthermore, we will need to ensure that all existing and future applications are compatible with OIDC to avoid any disruptions. If OIDC can not be used, SAML will be offered as fallback option.
 
-### Title
-
-Choice of security framework
+### Choosing ISO 27001 as security framework
 
 #### Status
 
@@ -264,26 +262,21 @@ Accepted
 
 #### Context
 
+There are various security frmaeworks available:
+
 1. **ISO/IEC 27001**
-    
-    Widely used in Germany, ISO/IEC 27001 aligns with **GDPR** and offers a systematic approach to information security management, covering people, processes, and technology.
-    
+Widely used in Germany, ISO/IEC 27001 aligns with **GDPR** and offers a systematic approach to information security management, covering people, processes, and technology.
+
 2. **BSI IT-Grundschutz**
-    
-    Developed by Germany’s **Federal Office for Information Security (BSI)**, IT-Grundschutz provides comprehensive guidelines for cybersecurity, emphasizing compliance with German regulations.
-    
+Developed by Germany’s **Federal Office for Information Security (BSI)**, IT-Grundschutz provides comprehensive guidelines for cybersecurity, emphasizing compliance with German regulations.
+
 3. **CIS Controls**
-    
-    Though not a European standard, CIS Controls are popular in Germany for their practical, prioritized actions to mitigate common cyber threats.
-    
+Though not a European standard, CIS Controls are popular in Germany for their practical, prioritized actions to mitigate common cyber threats.
+
 4. **NIST CSF 2.0**
-    
-    The NIST Cybersecurity Framework (CSF) 2.0, while primarily developed for U.S. organizations, has gained international recognition for its comprehensive approach to cybersecurity risk management. It provides a flexible and adaptable framework that can complement ISO/IEC 27001 in addressing emerging cyber threats and technologies.
-    
+The NIST Cybersecurity Framework (CSF) 2.0, while primarily developed for U.S. organizations, has gained international recognition for its comprehensive approach to cybersecurity risk management. It provides a flexible and adaptable framework that can complement ISO/IEC 27001 in addressing emerging cyber threats and technologies.
 
 #### Decision
-
-**Framework Selection:  ISO/IEC 27001 Compliance + NIST CSF2.0**
 
 ISO/IEC 27001 is ideal for the location Germany due to its **GDPR** alignment, international recognition, and structured approach to managing security across people, processes, and technology. It is also recognized world wide and one of the most commonly needed and used standard for information systems. However the ISO is more a standard and a certification for processes than a framework.
 
@@ -291,4 +284,6 @@ Additionally, NIST CSF 2.0 complements ISO/IEC 27001 by providing a flexible fra
 
 #### Consequences
 
-What becomes easier or more difficult to do because of this change?
+Choosing ISO/IEC 27001 as the primary security framework offers a structured and internationally recognized approach to managing information security, aligning well with GDPR requirements and ensuring robust protection across people, processes, and technology. This choice facilitates compliance with global standards and enhances credibility with stakeholders.
+
+However, adopting ISO/IEC 27001 means focusing primarily on certification and process-oriented security management. While this framework provides a solid foundation, it may require additional efforts to address emerging cyber threats and technologies. To mitigate this, integrating NIST CSF 2.0 alongside ISO/IEC 27001 allows for a flexible and comprehensive approach to cybersecurity, ensuring the organization remains adaptable and resilient against evolving risks. This dual-framework approach will likely necessitate a more complex implementation and ongoing management effort to harmonize the processes and requirements of both standards.
