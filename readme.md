@@ -6,7 +6,7 @@
 
 The proposed architecture is designed to provide secure, reliable, and cloud-agnostic authentication mechanisms for GitHub Enterprise services across a hybrid cloud environment consisting of public cloud, e.g. Microsoft Azure, and a private cloud. The central component of this architecture is Keycloak, an open-source Identity and Access Management (IAM) solution provided by the central IT. The architecture ensures seamless integration, high availability, and compliance with security standards.
 
-### Overview of Components we decided to Use
+### Rough Overview of Components
 
 1. **Keycloak Identity Provider (IDP):** As given as a requirement to use Keycloak we propose a deployment in a high-availability configuration across both public and the private cloud to ensure redundancy and low-latency access for users in different environments.
 2. **GitHub Enterprise Server:**
@@ -125,7 +125,6 @@ Here we describe the common OIDC Auth Flows and the decision where to use which 
 
 ![Architecture Overview](Architecture.drawio.png)
 
-
 ## 3. Reliability Analysis
 
 ### Potential Points of Failure
@@ -176,7 +175,7 @@ Here we describe the common OIDC Auth Flows and the decision where to use which 
 
 Based on ([Decision record template by Michael Nygard](https://github.com/joelparkerhenderson/architecture-decision-record))
 
-### Choosing rsyslog as the centralized logging system
+### 1. Choosing rsyslog as the centralized logging system
 
 #### Status
 
@@ -194,9 +193,7 @@ We have decided to adopt rsyslog as our centralized logging system. This choice 
 
 Adopting rsyslog as our centralized logging system will streamline log management by aggregating logs from multiple sources into a single, manageable location. This consolidation will simplify the process of analyzing and troubleshooting issues, making it easier to detect and address problems more effectively. The scalability of rsyslog ensures it can handle high volumes of log data, adapting as our needs grow, and its integration with existing tools and systems will facilitate a smooth transition.
 
-### Title
-
-Choice of monitoring tools
+### 2. Adopting Grafana + Loki/Promtail + Prometheus for Monitoring & Logging
 
 #### Status
 
@@ -204,18 +201,17 @@ Accepted
 
 #### Context
 
-
+We are setting up a new monitoring and logging infrastructure to enhance our ability to monitor system performance and troubleshoot issues effectively. We need a solution that integrates well, supports both metrics and logs, and scales with our growing needs. The planned infrastructure aims to provide a unified, scalable approach to real-time monitoring and log management.
 
 #### Decision
 
+We are implementing Grafana in combination with Loki/Promtail and Prometheus for our monitoring and logging needs. Grafana will be utilized for its advanced visualization capabilities, Loki with Promtail will handle log aggregation and indexing, and Prometheus will manage metrics collection and alerting. This integrated solution is chosen to offer a comprehensive and scalable monitoring and logging framework.
 
 #### Consequences
 
-What becomes easier or more difficult to do because of this change?
+The new setup of Grafana, Loki/Promtail, and Prometheus will significantly improve our monitoring and logging capabilities. Grafana will enable advanced data visualization, Loki and Promtail will streamline log management, and Prometheus will provide robust metrics collection and alerting.
 
-### Title
-
-Choice SIEM solution
+### Choosing Splunk as SIEM service
 
 #### Status
 
@@ -223,21 +219,17 @@ Accepted
 
 #### Context
 
-What is the issue that we're seeing that is motivating this decision or change?
+The need for a robust SIEM tool that integrates well with our infrastructure components and meets our performance and scalability requirements is crucial.
 
 #### Decision
 
-    - We decided to use Spunk over IBM QRadar because
-        - Better ecosystem and integration due to a bigger community
-        - Better risk based alerting (RBA) to address risks proactively
-        - Better customer support ([source](https://www.splunk.com/en_us/form/idc-marketscape-siem.html))
-
+We have decided to choose Splunk as our SIEM tool for the infrastructure. Splunk was selected due to its comprehensive feature set that aligns with our needs, including real-time monitoring, advanced threat detection, and extensive integration options. Its scalability and performance, coupled with a strong ecosystem of apps and add-ons, make it a suitable choice for handling our security and operational data. In addition to this, it offers a good ecosystem and integration due to a big community.
 
 #### Consequences
 
-What becomes easier or more difficult to do because of this change?
+Implementing Splunk will involve licensing and operational costs, which need to be accounted for in the budget.
 
-### Title
+### Adoption of OIDC as Primary Authentication Protocol in Keycloak
 
 Choice of primary authentication protocol
 
@@ -247,16 +239,20 @@ Accepted
 
 #### Context
 
-What is the issue that we're seeing that is motivating this decision or change?
+Our primary goals for this authentication solution are to ensure seamless integration with modern applications and services, support for single sign-on (SSO) to enhance user experience, and compatibility with a variety of identity providers and platforms. Additionally, we require robust security features to protect user identities and access.
+
+We are using Keycloak, an open-source identity and access management solution, which supports multiple protocols including OAuth 2.0, OpenID Connect (OIDC), and SAML
 
 #### Decision
 
-We decided to **use OIDC as the primary authentication protocol** because of the above mentioned justifications. However, due to the maturity of SAML and better backward compatibility, it is highly recommended to keep the SAML auth protocol as an secondary alternative.
+Our decision to adopt OpenID Connect (OIDC) as the primary authentication protocol within Keycloak is based on several key factors. OIDC is an identity layer built on top of OAuth 2.0, offering modern and standardized authentication capabilities. It provides robust support for single sign-on, allowing users to authenticate once and gain access to multiple applications, thereby enhancing user convenience.
 
+However, due to the maturity of SAML and better backward compatibility, it is highly recommended to keep the SAML auth protocol as an secondary alternative.
 
 #### Consequences
 
-What becomes easier or more difficult to do because of this change?
+The adoption of OIDC will involve updating and configuring client applications to use OIDC flows for authentication.
+Furthermore, we will need to ensure that all existing and future applications are compatible with OIDC to avoid any disruptions. If OIDC can not be used, SAML will be offered as fallback option.
 
 ### Title
 
