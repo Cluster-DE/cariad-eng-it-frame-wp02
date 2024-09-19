@@ -141,7 +141,7 @@ Here we describe the common OIDC Auth Flows and the decision where to use which 
 - **Keycloak Clustering:** Multiple Keycloak instances with session replication.
 - **Geographical Distribution:** Deploy instances in different data centers to mitigate localized failures.
 - **Load Balancing:** Use of load balancers to distribute traffic and detect failed instances.
-- **Private Public Cloud Replication**:  We propose implementing a hybrid cloud strategy with failover capabilities. This approach involves replicating critical services and data across both the private cloud and Azure, ensuring continuity of operations even if one environment experiences an outage.
+- **Private Public Cloud Replication**:  We propose implementing a hybrid cloud strategy with failover capabilities. This approach involves replicating critical services and data across both the public and private cloud, ensuring continuity of operations even if one environment experiences an outage.
 
 ### Failover Mechanisms
 
