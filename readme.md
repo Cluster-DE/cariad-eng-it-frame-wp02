@@ -95,38 +95,36 @@ Additionally, NIST CSF 2.0 complements ISO/IEC 27001 by providing a flexible fra
 
 ### Authentication Flows
 
-There many ways to authenticate a user or service based on OpenID Connect (OIDC). OIDC is based on OAuth 2.0. 
+There different ways to authenticate a user or service based on OpenID Connect (OIDC). OIDC is based on OAuth 2.0. 
 
 Here we describe the common OIDC Auth Flows and the decision where to use which flow:
 
-- AuthCode with PKCE
-- Interaction Code
-- AuthCode
-- Client Credentials
+- **AuthCode with PKCE:**
 
-## 2. Architecture Diagrams
+     Is used whenever a real user (not a service) wants to access an application. The authentication of the user is done directly by Keycloak providing a Single Sign On (SSO) page. This is requested by the client application and protected with a Proof Key for Code Exchange (PKCE). After the user successfully is authenticated, the client application recieves an authentication code.
 
-### Diagram 1: High-Level Architecture
+     With this code a token (optionally and recommended a refresh token) can be requested from the identitiy provider Keycloak. The token is a signed string with user information and additional information such as rights, roles and more. The token is send (commonly in the http header) to the server side application with the requests (e.g. Get Repo Details). The server side application checks the tokens validity and if the user is authorized to do the action. 
 
-![Architecture](Architecture.drawio.png)
+     If the token is an refresh token, the client application must request a new token every x seconds from the IdP, because its limited validity. 
 
-- **Users:** Accessing services from the internet and intranet.
-- **Load Balancers:** Distribute traffic from the hub to the specific spokes.
-- **Keycloak Cluster:** Instances in both public and private cloud, synchronized for high availability.
-- **GitHub Enterprise Server:** Replicated in both public and private cloud and integrated with Keycloak via OIDC/SAML.
-- **CI/CD Tools:** Connected to GitHub Enterprise, using Keycloak for authentication.
-- **Monitoring, Logging and SIEM Systems:** Collecting logs from Keycloak and GitHub Enterprise
+     We recommend the use of this auth flow to authenticate users to access any service. E.g. when an admin wants to access the Grafana Dashboard, the authentication must be done over the SSO Keycloak page. After a successfull authentication, the user is forwarded to the dashboard. 
 
-### Diagram 2: Authentication Flow
+![Auth Code with PKCE Flow](authflow-authcode-pkce.drawio.png)
 
-**[Description of Diagram]**
+- **Client Credentials:**
 
-1. **User Request:** User attempts to access GitHub Enterprise.
-2. **Redirect to Keycloak:** GitHub redirects the user to Keycloak for authentication.
-3. **Authentication:** User authenticates with Keycloak (password, MFA).
-4. **Token Issuance:** Keycloak issues an OIDC token.
-5. **Access Granted:** User is redirected back to GitHub with the token, access is granted.
-6. **Logging:** All events are logged and forwarded to the SIEM.
+    The Client Credentials Flow is an OAuth 2.0 grant type that allows a client (such as a backend service or microservice) to directly obtain an access token by authenticating itself to the authorization server, without requiring user involvement. It is primarily used for machine-to-machine (M2M) interactions, such as when a backend system needs to access APIs or services. The client sends its credentials (client ID and secret) to the authorization server, which issues an access token if the client is authenticated successfully. This flow is typically employed in backend communications, microservices, and server-to-server API interactions.
+
+    In this flow, the client requests specific access scopes and receives an access token, which it uses to call protected resources. The resource server then validates the token before granting access. Unlike other OIDC flows that involve end-user authentication and consent, the Client Credentials Flow is entirely focused on the client itself, making it ideal for trusted services that need to authenticate and authorize themselves for secure API access.
+
+    We propose to use this authentication flow for the communication and authentication between the services. E.g. writing logs to Promotheus/Loki, GitHub Enterprise calling webhooks of the Jenkins CI/CD tool. 
+
+![Client Credentials Auth Flow](authflow-client-credentials.drawio.png)
+
+## 2. Architecture Diagram
+
+![Architecture Overview](Architecture.drawio.png)
+
 
 ## 3. Reliability Analysis
 
