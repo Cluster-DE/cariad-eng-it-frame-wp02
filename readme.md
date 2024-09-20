@@ -95,35 +95,69 @@ Additionally, NIST CSF 2.0 complements ISO/IEC 27001 by providing a flexible fra
 
 ### Authentication Flows
 
-There different ways to authenticate a user or service based on OpenID Connect (OIDC). OIDC is based on OAuth 2.0. 
-
-Here we describe the common OIDC Auth Flows and the decision where to use which flow:
+There are different ways to authenticate a user or a service based on OpenID Connect (OIDC). In this section, the two main options, known as authentication flows, are described.
 
 - **AuthCode with PKCE:**
 
-     Is used whenever a real user (not a service) wants to access an application. The authentication of the user is done directly by Keycloak providing a Single Sign On (SSO) page. This is requested by the client application and protected with a Proof Key for Code Exchange (PKCE). After the user successfully is authenticated, the client application recieves an authentication code.
+    Is used whenever a real user (not a service) wants to access an application. The authentication of the user is done directly by Keycloak providing a Single Sign-On (SSO) page. This is requested by the client application and protected with a Proof Key for Code Exchange (PKCE). After the user is successfully authenticated, the client application receives an authentication code.
 
-     With this code a token (optionally and recommended a refresh token) can be requested from the identitiy provider Keycloak. The token is a signed string with user information and additional information such as rights, roles and more. The token is send (commonly in the http header) to the server side application with the requests (e.g. Get Repo Details). The server side application checks the tokens validity and if the user is authorized to do the action. 
+    With this code, a token (optionally and recommended a refresh token) can be requested from the identity provider Keycloak. The token is a signed string with user information and additional information such as rights, roles, and more. The token is sent (commonly in the HTTP header) to the server-side application with the requests (e.g., Get Repo Details). The server-side application checks the token's validity and if the user is authorized to perform the action.
 
-     If the token is an refresh token, the client application must request a new token every x seconds from the IdP, because its limited validity. 
+    If the token is a refresh token, the client application must request a new token every x seconds from the IdP, because of its limited validity.
 
-     We recommend the use of this auth flow to authenticate users to access any service. E.g. when an admin wants to access the Grafana Dashboard, the authentication must be done over the SSO Keycloak page. After a successfull authentication, the user is forwarded to the dashboard. 
+    We recommend the use of this auth flow to authenticate users to access any service. For example, when an admin wants to access the Grafana Dashboard, the authentication must be done over the SSO Keycloak page. After a successful authentication, the user is forwarded to the dashboard.
 
-![Auth Code with PKCE Flow](authflow-authcode-pkce.drawio.png)
+
+    ![Auth Code with PKCE Flow](authflow-authcode-pkce.drawio.png)
 
 - **Client Credentials:**
 
-    The Client Credentials Flow is an OAuth 2.0 grant type that allows a client (such as a backend service or microservice) to directly obtain an access token by authenticating itself to the authorization server, without requiring user involvement. It is primarily used for machine-to-machine (M2M) interactions, such as when a backend system needs to access APIs or services. The client sends its credentials (client ID and secret) to the authorization server, which issues an access token if the client is authenticated successfully. This flow is typically employed in backend communications, microservices, and server-to-server API interactions.
+    ### Client Credentials Flow
 
-    In this flow, the client requests specific access scopes and receives an access token, which it uses to call protected resources. The resource server then validates the token before granting access. Unlike other OIDC flows that involve end-user authentication and consent, the Client Credentials Flow is entirely focused on the client itself, making it ideal for trusted services that need to authenticate and authorize themselves for secure API access.
+    The Client Credentials Flow is an OAuth 2.0 grant type that allows a client (such as a backend service or microservice) to directly obtain an access token by authenticating itself to the authorization server, without requiring user involvement. It is primarily used for machine-to-machine (M2M) interactions, such as when a backend system needs to access APIs or services.
 
-    We propose to use this authentication flow for the communication and authentication between the services. E.g. writing logs to Promotheus/Loki, GitHub Enterprise calling webhooks of the Jenkins CI/CD tool. 
+    In this flow, the client sends its credentials (client ID and secret) to the authorization server, which issues an access token if the client is authenticated successfully. The client requests specific access scopes and receives an access token, which it uses to call protected resources. The resource server then validates the token before granting access.
 
-![Client Credentials Auth Flow](authflow-client-credentials.drawio.png)
+    Unlike other OIDC flows that involve end-user authentication and consent, the Client Credentials Flow is entirely focused on the client itself, making it ideal for trusted services that need to authenticate and authorize themselves for secure API access.
+
+    We propose to use this authentication flow for the communication and authentication between the services. For example, writing logs to Prometheus/Loki, or GitHub Enterprise calling webhooks of the Jenkins CI/CD tool.
+
+    ![Client Credentials Auth Flow](authflow-client-credentials.drawio.png)
 
 ## 2. Architecture Diagram
 
 ![Architecture Overview](Architecture.drawio.png)
+
+The architecture diagram provides a simplified overview of the hybrid cloud architecture. The network is designed using a hub-and-spoke topology, as detailed in the diagram of Microsoft below.
+
+In the center is the **hub virtual network**. All other networks are connected to this network either by peering or routing. The hub is planned to be in the cloud. Also external connections are going first through the hub network. E.g. when a service like Github Enterprise Server is accessed from the public internet, the request goes through the hub and is routed to the correct service in the other network. 
+
+The main task of the hub is to handle incomoning and outgoing traffic. For that there are 3 different ressources in the hub (simplified).
+
+**Firewall:** Filters all traffic from and to public internet.
+
+**VPN Gateway:** Connects the private cloud networks with the hub. Also client devices can connect with the VPN gateway. 
+
+**App gateway/Load Balancer:** Handles incomming traffic and distribnutes it between the services and instances of the services. 
+
+All other networks are so called **spokes**. Each spoke can be seen as a local network with the only external connection to the hub network. 
+
+We briefly address the spoke networks clockwise beginning at the top right network on the diagram. The **log spoke network** is hosted in a private cloud containing all Log and Security Log relevant services. It is recommended to also make the logging services redundant and host the logs in the cloud. Due to limited time we simplified this part and only deployed it in the private cloud.
+
+The next two virtual networks are for the **identity provider Keycloak**. One network is deployed to the private cloud, where the other is deployed in the puplic cloud. In both networks the Keycloak setup is (for simplicity reasons) the same, only with the difference that the private cloud network contains a VPN gateway to connect to the hub network in the public cloud. 
+
+In each network Keycloak is configured in a high avaliablitiy setup with multiple stateless instances of Keycloak running on nodes. This nodes are scalable with the demand. All keycloak instances in the network access the same SQL Database which also is synchronisly redundant, highly available and backed up (not shown for simplicity). 
+
+The two keycloak setups are bidirectionally synced via identity federation to ensure availability independent of each private and public cloud.
+
+Clients can connect vie VPN to the VPN gateway and have access to the networks (restricted and controlled).
+
+The **Github Enterprise Server (GHES) instances** are deployed similar as the Keycloak networks. For availability there is at least one virtual machine running GHES in each of both networks. The configuration of the VMs are shown in the section above. Both GHES instances are linked with each other. GHES triggers CI/CD pipelines via WebHooks on the Jenkins Pipeline Tool. 
+
+This network topology has the advantage that it scales and is a best practice for platforms. In reality, each project can get a preconfigured Landing Zone with the necessery components to create a spoke virtual network. Teams can work independently in the landing zone spoke networks on the project and sending requests to the platform team for changes in the hub network (e.g. whitelisting IPs / incomming traffic). The centralized network responsibility improves the security of the platform. The security can further be enhanced using policies, which forbid to make any other connection besides to the hub network. 
+
+![Hub and Spoke Network-Topology](hubspoke.png)
+([source](https://learn.microsoft.com/de-de/azure/architecture/networking/architecture/hub-spoke?tabs=cli))
 
 ## 3. Reliability Analysis
 
