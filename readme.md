@@ -128,33 +128,29 @@ There are different ways to authenticate a user or a service based on OpenID Con
 
 ![Architecture Overview](Architecture.drawio.png)
 
-The architecture diagram provides a simplified overview of the hybrid cloud architecture. The network is designed using a hub-and-spoke topology, as detailed in the diagram of Microsoft below.
+The architecture diagram provides a simplified overview of the hybrid cloud infrastructure. The network follows a hub-and-spoke topology, as illustrated in the Microsoft diagram below.
 
-In the center is the **hub virtual network**. All other networks are connected to this network either by peering or routing. The hub is planned to be in the cloud. Also external connections are going first through the hub network. E.g. when a service like Github Enterprise Server is accessed from the public internet, the request goes through the hub and is routed to the correct service in the other network. 
+At the core is the **hub virtual network**, which serves as the central point for all other networks, connected either via peering or routing. The hub is hosted in the cloud and manages all external connections. For instance, when a service like GitHub Enterprise Server is accessed from the public internet, the request is routed through the hub and directed to the appropriate service in a spoke network.
 
-The main task of the hub is to handle incomoning and outgoing traffic. For that there are 3 different ressources in the hub (simplified).
+The hub's primary function is to manage incoming and outgoing traffic. To accomplish this, three key resources are utilized within the hub:
 
-**Firewall:** Filters all traffic from and to public internet.
+- **Firewall**: Filters all traffic between the public internet and internal services.
+- **VPN Gateway**: Connects private cloud networks to the hub, allowing client devices to access resources via secure VPN connections.
+- **App Gateway/Load Balancer**: Manages incoming traffic, distributing it across services and instances within the network.
 
-**VPN Gateway:** Connects the private cloud networks with the hub. Also client devices can connect with the VPN gateway. 
+All other networks, referred to as **spokes**, function as local networks with their only external connection to the hub network.
 
-**App gateway/Load Balancer:** Handles incomming traffic and distribnutes it between the services and instances of the services. 
+Below is a clockwise overview of the spoke networks, starting from the top-right section of the diagram. The **log spoke network** resides in a private cloud and hosts all services related to log and security logging. While it is recommended to ensure redundancy by hosting logs in the cloud, we have simplified this setup by deploying it solely in the private cloud due to time constraints.
 
-All other networks are so called **spokes**. Each spoke can be seen as a local network with the only external connection to the hub network. 
+Next are the two virtual networks for the **Keycloak identity provider**. One is deployed in the private cloud, while the other operates in the public cloud. For simplicity, both networks have identical Keycloak configurations, with the key difference being that the private cloud network contains a VPN gateway for connection to the public cloud hub.
 
-We briefly address the spoke networks clockwise beginning at the top right network on the diagram. The **log spoke network** is hosted in a private cloud containing all Log and Security Log relevant services. It is recommended to also make the logging services redundant and host the logs in the cloud. Due to limited time we simplified this part and only deployed it in the private cloud.
+In both environments, Keycloak is configured for high availability with multiple stateless instances running on scalable nodes, which adjust based on demand. Each instance accesses a shared SQL database that is redundantly synchronized, highly available, and regularly backed up (not shown for simplicity). The two Keycloak setups are bidirectionally synced via identity federation, ensuring consistent availability across both clouds.
 
-The next two virtual networks are for the **identity provider Keycloak**. One network is deployed to the private cloud, where the other is deployed in the puplic cloud. In both networks the Keycloak setup is (for simplicity reasons) the same, only with the difference that the private cloud network contains a VPN gateway to connect to the hub network in the public cloud. 
+Clients can securely connect to the VPN gateway, granting controlled access to the network resources.
 
-In each network Keycloak is configured in a high avaliablitiy setup with multiple stateless instances of Keycloak running on nodes. This nodes are scalable with the demand. All keycloak instances in the network access the same SQL Database which also is synchronisly redundant, highly available and backed up (not shown for simplicity). 
+The **GitHub Enterprise Server (GHES) instances** are deployed similarly to the Keycloak networks. To ensure availability, at least one virtual machine runs GHES in each network. The configuration of these VMs is detailed in the section above. Both GHES instances are interconnected, with CI/CD pipelines triggered via webhooks to the Jenkins Pipeline Tool.
 
-The two keycloak setups are bidirectionally synced via identity federation to ensure availability independent of each private and public cloud.
-
-Clients can connect vie VPN to the VPN gateway and have access to the networks (restricted and controlled).
-
-The **Github Enterprise Server (GHES) instances** are deployed similar as the Keycloak networks. For availability there is at least one virtual machine running GHES in each of both networks. The configuration of the VMs are shown in the section above. Both GHES instances are linked with each other. GHES triggers CI/CD pipelines via WebHooks on the Jenkins Pipeline Tool. 
-
-This network topology has the advantage that it scales and is a best practice for platforms. In reality, each project can get a preconfigured Landing Zone with the necessery components to create a spoke virtual network. Teams can work independently in the landing zone spoke networks on the project and sending requests to the platform team for changes in the hub network (e.g. whitelisting IPs / incomming traffic). The centralized network responsibility improves the security of the platform. The security can further be enhanced using policies, which forbid to make any other connection besides to the hub network. 
+This network topology offers scalable and robust infrastructure, adhering to platform best practices. In real-world scenarios, each project is provided with a pre-configured landing zone, which includes the necessary components for creating a spoke virtual network. Teams can work independently within their landing zone spokes, while any changes to the hub network (such as whitelisting IP addresses or managing incoming traffic) are handled by the platform team. This centralized network management enhances the platform's security, further reinforced by policies that restrict external connections exclusively to the hub network.
 
 ![Hub and Spoke Network-Topology](hubspoke.png)
 ([source](https://learn.microsoft.com/de-de/azure/architecture/networking/architecture/hub-spoke?tabs=cli))
