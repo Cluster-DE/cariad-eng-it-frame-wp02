@@ -99,7 +99,7 @@ There are different ways to authenticate a user or a service based on OpenID Con
 
 - **AuthCode with PKCE:**
 
-    Is used whenever a real user (not a service) wants to access an application. The authentication of the user is done directly by Keycloak providing a Single Sign-On (SSO) page. This is requested by the client application and protected with a Proof Key for Code Exchange (PKCE). After the user is successfully authenticated, the client application receives an authentication code.
+    Is used whenever a real user (not a service) wants to access an application. The authentication process is handled by Keycloak, which provides a Single Sign-On (SSO) page. The client application requests this page and uses Proof Key for Code Exchange (PKCE) for added security. Keycloak presents the authentication page and prompts the user to enter their credentials, such as username (email) and password. It is recommended to also configure multi-factor authentication (MFA) in the authentication flow. If MFA is enabled, Keycloak will prompt the user for the additional authentication step before returning the PKCE to the application. Once the user is successfully authenticated, the client application receives an authentication code.
 
     With this code, a token (optionally and recommended a refresh token) can be requested from the identity provider Keycloak. The token is a signed string with user information and additional information such as rights, roles, and more. The token is sent (commonly in the HTTP header) to the server-side application with the requests (e.g., Get Repo Details). The server-side application checks the token's validity and if the user is authorized to perform the action.
 
@@ -140,7 +140,7 @@ The hub's primary function is to manage incoming and outgoing traffic. To accomp
 
 All other networks, referred to as **spokes**, function as local networks with their only external connection to the hub network.
 
-Below is a clockwise overview of the spoke networks, starting from the top-right section of the diagram. The **log spoke network** resides in a private cloud and hosts all services related to log and security logging. While it is recommended to ensure redundancy by hosting logs in the cloud, we have simplified this setup by deploying it solely in the private cloud due to time constraints.
+Above is a clockwise overview of the spoke networks, starting from the top-right section of the diagram. The **log spoke network** resides in a private cloud and hosts all services related to log and security logging. While it is recommended to ensure redundancy by hosting logs in the cloud, we have simplified this setup by deploying it solely in the private cloud due to time constraints.
 
 Next are the two virtual networks for the **Keycloak identity provider**. One is deployed in the private cloud, while the other operates in the public cloud. For simplicity, both networks have identical Keycloak configurations, with the key difference being that the private cloud network contains a VPN gateway for connection to the public cloud hub.
 
@@ -201,7 +201,7 @@ This network topology offers scalable and robust infrastructure, adhering to pla
 - **Monitoring Tools:** Prometheus and Grafana provide comprehensive visibility into system health and performance, enabling proactive issue detection and resolution. These tools offer real-time insights, customizable dashboards, and alerting capabilities, ensuring optimal system operation and rapid response to potential problems. Splunk integration provides advanced log management and analysis capabilities, enabling deeper insights into security events and user activities. Its powerful search and correlation features enhance threat detection and incident response, complementing the real-time monitoring provided by Prometheus and Grafana.
 - **ISO/IEC 27001 + NIST CSF 2.0 Selection:** The ISO standards are internationally recognized and accepted. Thus, a certification does not only proofs the security of the systems, but also builds trust for partners and suppliers.  In addition NIST CSF 2.0 provides a robust framework adaptable to hybrid cloud environments and compatible with the ISO/IEC 27001 standards. it is developed by the US government and has the focus on cybersecurity. Besides that, it is customizable and flexible. In the US it is widely used in healthcare, finance and energy.
 
-## Architecture decision records
+## 5. Architecture decision records
 
 Based on ([Decision record template by Michael Nygard](https://github.com/joelparkerhenderson/architecture-decision-record))
 
@@ -241,7 +241,7 @@ We are implementing Grafana in combination with Loki/Promtail and Prometheus for
 
 The new setup of Grafana, Loki/Promtail, and Prometheus will significantly improve our monitoring and logging capabilities. Grafana will enable advanced data visualization, Loki and Promtail will streamline log management, and Prometheus will provide robust metrics collection and alerting.
 
-### Choosing Splunk as SIEM service
+### 3. Choosing Splunk as SIEM service
 
 #### Status
 
@@ -259,7 +259,7 @@ We have decided to choose Splunk as our SIEM tool for the infrastructure. Splunk
 
 Implementing Splunk will involve licensing and operational costs, which need to be accounted for in the budget.
 
-### Adoption of OIDC as Primary Authentication Protocol in Keycloak
+### 4. Adoption of OIDC as Primary Authentication Protocol in Keycloak
 
 Choice of primary authentication protocol
 
@@ -284,7 +284,7 @@ However, due to the maturity of SAML and better backward compatibility, it is hi
 The adoption of OIDC will involve updating and configuring client applications to use OIDC flows for authentication.
 Furthermore, we will need to ensure that all existing and future applications are compatible with OIDC to avoid any disruptions. If OIDC can not be used, SAML will be offered as fallback option.
 
-### Choosing ISO 27001 as security framework
+### 5. Choosing ISO 27001 as security framework
 
 #### Status
 
