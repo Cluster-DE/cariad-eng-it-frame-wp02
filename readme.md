@@ -1,5 +1,8 @@
 # WP02
 
+## Repository
+[Link to Public Repository](https://github.com/Cluster-DE/cariad-eng-it-frame-wp02)
+
 ## 1. Architecture Description
 
 ### Overview
